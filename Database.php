@@ -21,6 +21,8 @@ class Database {
         $this->dbname = $dbname;
         $this->port = $port;
         // Set DSN
+        
+
 
         $dsn = 'mysql:host=' . $this->host . ':'.$this->port.';dbname=' . $this->dbname;
         
@@ -32,17 +34,32 @@ class Database {
         
         // Create a new PDO instanace
         try{
+            //echo $dsn;exit;
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
+            //var_dump($this->dbh);exit;
+            $this->dbh->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );//Error Handling
+            //echo 'tedr';
         }
         // Catch any errors
         catch(PDOException $e){
+            echo 'error';
             $this->error = $e->getMessage();
+            var_dump($this->error);exit;
         }
+    }
+
+    public function statement(string $sql)
+    {
+        $this->dhb->exec($sql);
+
+        return $this;
     }
     
     // Prepare
     public function query($query){
         $this->stmt = $this->dbh->prepare($query);
+        
+        return $this;
     }
     
     // Bind

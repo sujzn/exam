@@ -17,29 +17,24 @@ try{
     
     if(count($createTable)){
         $dbCredentials = getopt("u:p:h:d:o:");
-        if(!$dbCredentials['u'] || !$dbCredentials['p'] || !$dbCredentials['h']){
+        if(!$dbCredentials['u'] || !$dbCredentials['h']){
             throw new Exception('Database Username, Password and Host must be provided!!');
         } 
-        
+        //echo 'hi';
         $processor->initDatabase($dbCredentials)->createTable();
 
         //var_dump(getopt("u:p:h:"));exit;
     }
-    
 
-
-
-
-	$files = getopt("f:");
-	if(empty($files)){
-		throw new Exception('Please pass csv files as argument.', 1);
-	}
-	//print_r($files);exit;
-	include_once 'process.php';
-    $csv = new csv($files);
-
-
-    //print_r($csv);exit;
+    $csvFile = getopt('f:');
+    //print_r($csvFile);exit;
+    if(empty($csvFile)){
+        throw new Exception('Please pass CSV file as an argument!');
+    }
+    $processor->readFile($csvFile);
+ 
+	
+	//print_r($csv);exit;
     fwrite(STDOUT, $csv->import());
     exit(0);
 
