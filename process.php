@@ -33,16 +33,8 @@ class csv {
         }
     }
 
-    public function import($file){
-
-    	print_r($file);exit;
-
-    	$file = fopen($file, 'r');
-    	while($rows = fgetcsv($file)){
-    		print "<pre>".print_r($rows)."</pre>";
-    	}
-
-    		
+    public function import(){
+    	
     }
 }
 

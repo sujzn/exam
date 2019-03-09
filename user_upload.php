@@ -1,6 +1,6 @@
 <?php 
 
-//if('PHP_SAPI' != 'cli') exit ('Access Denied!');
+if('PHP_SAPI' != 'cli') exit ('Access Denied!');
 
 try{
 
@@ -8,9 +8,11 @@ try{
 	if(empty($files)){
 		throw new Exception('Please pass csv files as argument.', 1);
 	}
+	//print_r($files);exit;
 	include_once 'process.php';
     $csv = new csv($files);
-    fwrite(STDOUT, $csv->import($csv));
+    //print_r($csv);exit;
+    fwrite(STDOUT, $csv->import());
     exit(0);
 
 } catch (Exception $e) {
@@ -18,5 +20,3 @@ try{
     fwrite(STDERR, $error);
     exit($e->getCode());
 }
-
-?>
