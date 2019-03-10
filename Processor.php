@@ -20,6 +20,8 @@ class Processor
         $dbDatabase = $credentials['d'] ?? 'assignment';
         $dbPort = $credentials['o'] ?? 3306 ;
 
+        //echo $this->database;exit;
+
         $this->database = new Database($dbHost,$dbUser,$dbPass,$dbDatabase,$dbPort);
         
         return $this; 
@@ -64,35 +66,52 @@ class Processor
         echo 'TABLE created';
     }
 
-    // public function readFile($file){
-        
-    //     $files = implode(",",$file);
-    //     $handle = fopen($files, "r");
-    //     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    public function readFile($file){
 
-    //         $num = count($data);    
-    //         $row++;
+        $handle = fopen($file, "r");
+        $i = 1;
+        while (($data = fgetcsv($handle, 5000, ",")) !== FALSE) {
+            $num = count($data);    
+            $row++;
+            $mycsvfile[] = $data;
+            
+            $firstColumn = $mycsvfile[0][0];
+            $secondColumn = $mycsvfile[0][1];
+            $thirdColumn =  $mycsvfile[0][2];
 
-    //         $mycsvfile[] = $data; //add the row to the main array.
+            if (trim($firstColumn) !== "name" || trim($secondColumn) !== "surname" || trim($thirdColumn) !== "email") {
+                echo 'Invalid Header';   exit;                
+                fclose($handle);                
+            } else {
+                if ($i > 0) {
+                    //echo 'here';exit;
+                    $patternName = UCfirst($firstColumn);
+                    var_dump($patternName);
+                    $patternSurname = UCfirst($secondColumn);
 
-    //         $firstRow = $mycsvfile[0][0];
-    //         $secondRow = $mycsvfile[0][1];
-    //         $thirdRow =  $mycsvfile[0][2];
+                   
 
-    //         $patternEmail = '(?:[a-z0-9!#$%&*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
+                    // Check if the row has the correct format
+                    //if (preg_match($data[2], $patternPhone)) {
 
-    //         if (preg_match($data[2], $thirdRow)) {
-                
-    //             $import = "INSERT into suppliers ('name', 'surname', 'email')values('$data[0]','$data[1]','$data[2]')";
+                        // Format is OK, let's insert
 
-    //                         $this->database->statement($import);
-    //                         //$qstring = '?status=succ'; 
-    //             } else {
-    //                 // The row doesn't have the right format
-    //                 echo "The row $row doesn't have the right format";
-    //             }
-    //     }   
-    //     fclose($handle);  
-    // }
+                        // $import = "INSERT into upload (techDate, techEmail, techPhone)values('$data[0]','$data[1]','$data[2]')";
+
+                        // $db->query($import);
+                        // $qstring = '?status=succ';
+
+                } else {
+                         // The row doesn't have the right format
+                        //echo 'there';exit; 
+                         echo "The row ".$row." doesn't have the right format";
+                }
+            }
+        }
+        $i++; 
+        fclose($handle);
+    }      
+
 }
+
 ?>

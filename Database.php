@@ -34,8 +34,8 @@ class Database {
         
         // Create a new PDO instanace
         try{
-            echo $dsn;exit;
-            $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
+           //echo $this->pass;exit;
+            $this->dbh = new PDO($dsn, $this->user, $this->pass);
             //var_dump($this->dbh);exit;
             $this->dbh->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );//Error Handling
             //echo 'tedr';
@@ -50,7 +50,7 @@ class Database {
 
     public function statement(string $sql)
     {
-        $this->dhb->exec($sql);
+        $this->dhb->query($sql);
 
         return $this;
     }

@@ -29,28 +29,28 @@ try{
 
         //var_dump(getopt("u:p:h:"));exit;
     }
-
-    /* Read and insert csv file to database script */
-
-    // $csvFile = getopt('f:');
-    // //print_r($csvFile);exit;
-    // if(empty($csvFile)){
-    //     throw new Exception('Please pass CSV file as an argument!');
-    // }
-    // $processor->readFile($csvFile);
- 
-	
-	//print_r($csv);exit;
-    // fwrite(STDOUT, $csv->import());
-    // exit(0);
-
-
+    
     /* File name print script */
 
     $file = getopt(null,['file::']);
     if(count($file)){
         $processor->printFileName();
     }
+
+    /* Read and insert csv file to database script */
+
+    $csvFile = getopt('c:');
+    $files = implode(",",$csvFile);
+    //print_r($files);exit;
+    if(empty($csvFile)){
+        throw new Exception('Please pass CSV file as an argument!');
+    }
+    $processor->readFile($files);
+ 
+	
+	//print_r($csv);exit;
+    // fwrite(STDOUT, $csv->import());
+    // exit(0);
 
 
 } catch (Exception $e) {
