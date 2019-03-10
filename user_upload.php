@@ -1,62 +1,73 @@
 <?php 
-
+error_reporting(E_STRICT);
 include_once('Processor.php');
 
-//if('PHP_SAPI' != 'cli') exit ('Access Denied!');
+function dd(...$var)
+{
+    var_dump($var);exit;
+}
+
 
 try{
-
+    
+    $inputs = getopt('u:p:h:d:o:', ['create_table', 'file:', 'dry_run', 'help']);
+    
     $processor = new Processor();
-
-    /* Print help script  */
-    $help = getopt(null,['help::']);
-    if(count($help)){
+    
+    if(isset($inputs['help'])){
         $processor->printHelp();
     }
-
-
-    /* create table script */
-
-    $createTable = getopt(null,['create_table::']);
     
-    if(count($createTable)){
-        $dbCredentials = getopt("u:p:h:d:o:");
+    
+    $dbCredentials = [
+        'u' => $inputs['u'] ?? NULL,
+        'p' => $inputs['p'] ?? '',
+        'h' => $inputs['h'] ?? NULL,
+        'd' => $inputs['d'] ?? 'assignment',
+        'o' => $inputs['o'] ?? 3306
+    ];
+    
+    if(isset($inputs['create_table'])){
+        
         if(!$dbCredentials['u'] || !$dbCredentials['h']){
             throw new Exception('Database Username, Password and Host must be provided!!');
         } 
-        //echo 'hi';
+        
         $processor->initDatabase($dbCredentials)->createTable();
-
-        //var_dump(getopt("u:p:h:"));exit;
+        
     }
     
-    /* File name print script */
-
-    $file = getopt(null,['file::']);
-    if(count($file)){
-        $processor->printFileName();
+    
+    
+    if(isset($inputs['file'])){
+        $isDryRun = isset($inputs['dry_run']);
+        $fileName = $inputs['file'] ?? null;
+        
+        
+        
+        if(!$fileName) {
+            throw new Exception('File name should be provided');
+        }
+        
+        if(!$isDryRun){
+            if(!$dbCredentials['u'] || !$dbCredentials['h']){
+                throw new Exception('Database Username, Password and Host must be provided!!');
+            }
+            
+            $processor->initDatabase($dbCredentials);
+        }
+        
+        
+        $processor->processFile($fileName, $isDryRun);
+        
+        
     }
-
-    /* Read and insert csv file to database script */
-
-    $csvFile = getopt('c:');
-    $files = implode(",",$csvFile);
-    //print_r($files);exit;
-    if(empty($csvFile)){
-        throw new Exception('Please pass CSV file as an argument!');
-    }
-    $processor->readFile($files);
- 
-	
-	//print_r($csv);exit;
-    // fwrite(STDOUT, $csv->import());
-    // exit(0);
-
-
+    
 } catch (Exception $e) {
-    $error = "---------------\nError: {$e->getMessage()}\n---------------";
+    $error = "\n---------------\nError: {$e->getMessage()}\n---------------\n\n";
     fwrite(STDERR, $error);
-    exit($e->getMessage());
-}
+    exit;
+}   
+
 
 

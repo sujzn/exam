@@ -4,14 +4,20 @@ include_once('Database.php');
 
 class Processor 
 {
-
+    
     private $database;
-
+    
     public function __construct()
     {
-   
+        
     }
 
+    function validateemail($email) {
+        $v = "/^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/";
+        
+        return (bool)preg_match($v, $email);
+        }
+    
     public function initDatabase(array $credentials)
     {
         $dbUser = $credentials['u'];
@@ -19,14 +25,13 @@ class Processor
         $dbHost = $credentials['h'];
         $dbDatabase = $credentials['d'] ?? 'assignment';
         $dbPort = $credentials['o'] ?? 3306 ;
-
-        //echo $this->database;exit;
-
+        
+        
         $this->database = new Database($dbHost,$dbUser,$dbPass,$dbDatabase,$dbPort);
         
         return $this; 
     }
-
+    
     public function printHelp()
     {
         $output = "• --file                [csv file name] – this is the name of the CSV to be parsed\n";
@@ -38,17 +43,17 @@ class Processor
         $output .= "• -h                    MySQL host\n";
         $output .= "• -d                    MySQL database\n";
         $output .= "• -o                    MySQL port\n";
-    
+        
         echo $output;exit;
     }
-
+    
     public function printFileName()
     {
         $output = 'users.csv – this is the name of the CSV to be parsed';
         echo $output;exit;
     }
-
-
+    
+    
     public function createTable(){
         $table = 'users';
         $sql = "CREATE TABLE IF NOT EXISTS {$table} (
@@ -57,61 +62,81 @@ class Processor
             surname VARCHAR(12) NOT NULL,
             email VARCHAR(255) NOT NULL UNIQUE,
             CONSTRAINT uc_email UNIQUE (email)
-            );";
-
-        echo $sql;exit;    
+        );";
+           
         
-        $this->database->statement($sql);
-
-        echo 'TABLE created';
+        $this->database->query($sql);
+        
+        echo 'Table Created.';
     }
-
-    public function readFile($file){
-
-        $handle = fopen($file, "r");
-        $i = 1;
-        while (($data = fgetcsv($handle, 5000, ",")) !== FALSE) {
-            $num = count($data);    
-            $row++;
-            $mycsvfile[] = $data;
-            
-            $firstColumn = $mycsvfile[0][0];
-            $secondColumn = $mycsvfile[0][1];
-            $thirdColumn =  $mycsvfile[0][2];
-
-            if (trim($firstColumn) !== "name" || trim($secondColumn) !== "surname" || trim($thirdColumn) !== "email") {
-                echo 'Invalid Header';   exit;                
-                fclose($handle);                
-            } else {
-                if ($i > 0) {
-                    //echo 'here';exit;
-                    $patternName = UCfirst($firstColumn);
-                    var_dump($patternName);
-                    $patternSurname = UCfirst($secondColumn);
-
-                   
-
-                    // Check if the row has the correct format
-                    //if (preg_match($data[2], $patternPhone)) {
-
-                        // Format is OK, let's insert
-
-                        // $import = "INSERT into upload (techDate, techEmail, techPhone)values('$data[0]','$data[1]','$data[2]')";
-
-                        // $db->query($import);
-                        // $qstring = '?status=succ';
-
-                } else {
-                         // The row doesn't have the right format
-                        //echo 'there';exit; 
-                         echo "The row ".$row." doesn't have the right format";
-                }
-            }
+    
+    protected function getUsersFromCSV(string $file) : array
+    {
+        
+        if (!file_exists($file)) {
+            throw new Exception('File not found.');
         }
-        $i++; 
-        fclose($handle);
-    }      
+        $fp = fopen($file, 'r');
+        if ($fp === false) {
+            throw new Exception('Cannon open file/');
+        }
+        $users = [];
+        while (($user = fgetcsv($fp)) !== false) {
+            $users[] = $user;
+        }
+        fclose($fp);
+        return empty($users) ? [] : $users;
+    }
+    
+    public function processFile(string $file, bool $isDryRun)
+    {
 
+        $users = $this->getUsersFromCSV($file);
+
+        unset($users[0]);
+        
+
+        $users = array_map(function(array $user) use($isDryRun) {
+
+            $name = $user[0];
+            $surname = $user[1];
+            $email = $user[2];
+            
+            // validate name 
+            $name = addslashes(ucfirst(strtolower(trim($name))));
+            $surname = addslashes(ucfirst(strtolower(trim($surname))));
+            $email = addslashes(strtolower(trim($email)));
+            
+            $user = ['name' => $name, 'surname' => $surname, 'email' => $email];
+            
+            if($this->validateemail($email)) {
+                if(!$isDryRun && !email === FALSE ) {
+                    try {
+                        $this->saveInDB($user);
+                    } catch(Exception $exception) {
+                        echo $exception->getMessage()."\n";
+                    }
+                    
+                }
+            } else {
+                echo 'Email is not valid: '.$email."\n";
+            }
+            
+            if($isDryRun) {
+                print_r($user);
+            }
+            
+            return $user;            
+        }, $users);
+    }
+    
+    public function saveInDB(array $row)
+    {
+        $sql = "INSERT INTO users (name,surname,email) VALUES ('{$row['name']}','{$row['surname']}','{$row['email']}')";
+        $this->database->query($sql);
+    }
+    
+    
 }
 
-?>
+
