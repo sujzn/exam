@@ -34,7 +34,7 @@ class Database {
         
         // Create a new PDO instanace
         try{
-            //echo $dsn;exit;
+            echo $dsn;exit;
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
             //var_dump($this->dbh);exit;
             $this->dbh->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );//Error Handling
